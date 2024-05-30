@@ -1,4 +1,5 @@
-Настройка и скачивание StemaCMD.exe
+#Русская документация
+#Настройка и скачивание StemaCMD.exe
 ## 1. Скачайте SteamCMD.exe по ссылке https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip
 ## 2. Создайте папку (не закидывать туда, где сам Steam) и закиньте разархевируйте файл в папку
 ## 3. Создайте .bat файл с содержимым
