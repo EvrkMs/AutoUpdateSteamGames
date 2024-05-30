@@ -113,11 +113,16 @@ mklink /D common "E:\steam\steamapps\common\"
 ```json
 Копировать код
 {
+  // path to the batch file from step 3
   "BatFilePath": "C:\\SteamCMD\\UpdateSteamGames.bat",
+  // Telegram bot token
   "BotToken": "Your_bot_token",
-  "ChatId": -1002066018588,
+  // your chat_id
+  "ChatId": -0,
+  // are there topics/threads in the Telegram chat
   "CheakTraid": true,
-  "TaidId": 6
+  // chat topic if CheakTraid == true
+  "TaidId": 0
 }
 ```
 ###  Open "Task Scheduler" (Win+R, taskschd.msc).
