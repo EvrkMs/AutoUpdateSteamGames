@@ -66,7 +66,6 @@ mklink common\ E:\steam\steamapps\common\
   ### b. Create a folder (do not place it where Steam itself is located) and unzip the file into that folder.
   ### c. Create a .bat file with the following content:
 ```bat
-Копировать код
 @echo off
 chcp 65001 > nul 2>&1
 cls
@@ -77,7 +76,6 @@ cls
   ### 2. Create a script file
   ### Create a .txt file (in my case it's scr.txt, but you can name it as you like) with the following content:
 ```bash
-Копировать код
 @ShutdownOnFailedCommand 1
 @NoPromptForPassword 1
 
@@ -97,13 +95,11 @@ quit
 ##  Create a folder steamapps in the directory where steamcmd.exe is located and copy the path to this folder.
 ## Open CMD (Win+R, type cmd, press Enter) and first enter:
 ```bash
-Копировать код
 cd "C:\SteamCMD\steamapps\"
 ```
 ####  Replace C:\SteamCMD\steamapps\ with the path from the previous step.
 ### Then enter the following:
 ```bash
-Копировать код
 mklink /D common "E:\steam\steamapps\common\"
 ```
 ####  Replace E:\steam\steamapps\common\ with the path from the previous step.
@@ -111,7 +107,6 @@ mklink /D common "E:\steam\steamapps\common\"
 ###  Download the project (from the release).
 ###  After unpacking, go to the config.json file and fill in the data:
 ```json
-Копировать код
 {
   // path to the batch file from step 3
   "BatFilePath": "C:\\SteamCMD\\UpdateSteamGames.bat",
