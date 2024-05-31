@@ -14,6 +14,7 @@ public class Config
     public string SteamAppsPath { get; set; }
     public string ClientPath { get; set; }
     public string CmdPath { get; set; }
+    public string Message { get; set; } // Новое свойство для сообщения
 }
 
 public static class ConfigManager
