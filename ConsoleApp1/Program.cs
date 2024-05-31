@@ -1,149 +1,256 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
-using System.Text.Json;
+using System.Linq;
 using System.Threading.Tasks;
-using Telegram.Bot;
-
-public class Config
-{
-    public string BatFilePath { get; set; }
-    public string BotToken { get; set; }
-    public long ChatId { get; set; }
-    public bool CheakTraid { get; set; }
-    public int TaidId { get; set; }
-}
 
 class Program
 {
+    private static bool clientPathSet = false;
+    private static bool cmdPathSet = false;
+    private static bool pathsSetCorrectly = false;
+    private static List<string> commandHistory = new List<string>();
+    private static int historyIndex = -1;
+
     static async Task Main(string[] args)
     {
+        ShowHelp();
 
-        Console.WriteLine("Запуск программы...");
+        // Загрузка конфигурации и проверка путей
+        await LoadConfigAndCheckPaths();
 
-        // Чтение конфигурации из JSON файла
-        string exePath = AppDomain.CurrentDomain.BaseDirectory;
-        string configPath = Path.Combine(exePath, "config.json");
-        if (!File.Exists(configPath))
+        if (args.Length > 0)
         {
-            Console.WriteLine($"Файл конфигурации не найден: {configPath}");
-            Pause();
-            return;
-        }
-
-        string json;
-        try
-        {
-            json = File.ReadAllText(configPath);
-            Console.WriteLine("Конфигурационный файл успешно прочитан.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Ошибка чтения файла конфигурации: {ex.Message}");
-            Pause();
-            return;
-        }
-
-        Config config;
-        try
-        {
-            config = JsonSerializer.Deserialize<Config>(json);
-            Console.WriteLine("Конфигурационный файл успешно десериализован.");
-            Console.WriteLine($"Содержимое конфигурационного файла: BatFilePath = {config.BatFilePath}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Ошибка десериализации JSON: {ex.Message}");
-            Pause();
-            return;
-        }
-
-        if (config == null || string.IsNullOrEmpty(config.BatFilePath))
-        {
-            Console.WriteLine("Ошибка чтения конфигурации или путь к батнику не задан.");
-            Pause();
-            return;
-        }
-
-        if (!File.Exists(config.BatFilePath))
-        {
-            Console.WriteLine($"Батник не найден по указанному пути: {config.BatFilePath}");
-            Pause();
-            return;
-        }
-
-        Console.WriteLine($"Запуск батника: {config.BatFilePath}");
-
-        // Запуск батника
-        Process process = new Process();
-        process.StartInfo.FileName = config.BatFilePath;
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.RedirectStandardOutput = true;
-        process.StartInfo.RedirectStandardError = true;
-        process.StartInfo.CreateNoWindow = true;
-
-        process.OutputDataReceived += (sender, e) => { if (e.Data != null) Console.WriteLine(e.Data); };
-        process.ErrorDataReceived += (sender, e) => { if (e.Data != null) Console.WriteLine("ERROR: " + e.Data); };
-
-        try
-        {
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            process.WaitForExit();
-
-            Console.WriteLine("Батник завершил работу.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Ошибка запуска процесса: {ex.Message}");
-            Pause();
-            return;
-        }
-
-        // Проверка завершения процесса
-        if (process.ExitCode == 0)
-        {
-            Console.WriteLine("Батник успешно выполнен.");
-            await SendTelegramMessage("Игры обновлены, перезагрузите все свободные ПК.", config);
+            // Выполнение команд, переданных через аргументы
+            await ExecuteCommand(args);
         }
         else
         {
-            Console.WriteLine($"Батник завершился с ошибкой. Код выхода: {process.ExitCode}");
+            // Интерактивный режим
+            await RunInteractiveMode();
         }
-
-        Console.WriteLine("Программа завершена.");
-        Pause();
     }
 
-    static async Task SendTelegramMessage(string message, Config config)
+    private static async Task RunInteractiveMode()
     {
-        string botToken = config.BotToken;
-        long chatId = config.ChatId;
-
-        try
+        List<string> commands = new List<string>
         {
-            TelegramBotClient botClient = new TelegramBotClient(botToken);
-            if (!config.CheakTraid)
+            "+update", "updateplan", "collectlist", "clientpath", "cmdpath", "createbat", "help"
+        };
+
+        while (true)
+        {
+            Console.Write("> ");
+            string input = ReadInputWithAutoComplete(commands);
+            if (string.IsNullOrWhiteSpace(input))
             {
-                await botClient.SendTextMessageAsync(chatId, message);
+                continue;
+            }
+
+            commandHistory.Add(input);
+            historyIndex = commandHistory.Count;
+
+            string[] commandArgs = input.Split(' ');
+            await ExecuteCommand(commandArgs);
+        }
+    }
+
+    private static string ReadInputWithAutoComplete(List<string> commands)
+    {
+        string input = "";
+        int tabIndex = -1;
+        while (true)
+        {
+            var key = Console.ReadKey(intercept: true);
+            if (key.Key == ConsoleKey.Enter)
+            {
+                Console.WriteLine();
+                break;
+            }
+            else if (key.Key == ConsoleKey.Tab)
+            {
+                var suggestions = commands.Where(c => c.StartsWith(input, StringComparison.OrdinalIgnoreCase)).ToList();
+                if (suggestions.Count > 0)
+                {
+                    // Если введенная команда уже есть в списке команд, перейти к следующей
+                    if (suggestions.Contains(input, StringComparer.OrdinalIgnoreCase))
+                    {
+                        int currentIndex = suggestions.FindIndex(c => c.Equals(input, StringComparison.OrdinalIgnoreCase));
+                        tabIndex = (currentIndex + 1) % suggestions.Count;
+                    }
+                    else
+                    {
+                        tabIndex = (tabIndex + 1) % suggestions.Count;
+                    }
+                    input = suggestions[tabIndex];
+                    UpdateConsoleInput(input);
+                }
+                else if (string.IsNullOrEmpty(input))
+                {
+                    tabIndex = (tabIndex + 1) % commands.Count;
+                    input = commands[tabIndex];
+                    UpdateConsoleInput(input);
+                }
+            }
+            else if (key.Key == ConsoleKey.Backspace)
+            {
+                if (input.Length > 0)
+                {
+                    input = input.Substring(0, input.Length - 1);
+                    UpdateConsoleInput(input);
+                    tabIndex = -1;  // Reset tab index
+                }
+            }
+            else if (key.Key == ConsoleKey.UpArrow)
+            {
+                if (historyIndex > 0)
+                {
+                    historyIndex--;
+                    input = commandHistory[historyIndex];
+                    UpdateConsoleInput(input);
+                }
+            }
+            else if (key.Key == ConsoleKey.DownArrow)
+            {
+                if (historyIndex < commandHistory.Count - 1)
+                {
+                    historyIndex++;
+                    input = commandHistory[historyIndex];
+                    UpdateConsoleInput(input);
+                }
+                else
+                {
+                    input = "";
+                    historyIndex = commandHistory.Count;
+                    UpdateConsoleInput(input);
+                }
+            }
+            else if (key.KeyChar == ' ' && string.IsNullOrEmpty(input))
+            {
+                // Игнорируем пробел, если команда не введена
+                continue;
             }
             else
             {
-                await botClient.SendTextMessageAsync(chatId, message, replyToMessageId: config.TaidId);
+                input += key.KeyChar;
+                Console.Write(key.KeyChar);
+                tabIndex = -1;  // Reset tab index
             }
-            Console.WriteLine("Сообщение отправлено в Telegram.");
         }
-        catch (Exception ex)
+        return input;
+    }
+
+    private static void UpdateConsoleInput(string input)
+    {
+        int currentLineCursor = Console.CursorTop;
+        Console.SetCursorPosition(2, currentLineCursor);
+        Console.Write(new string(' ', Console.WindowWidth - 2));
+        Console.SetCursorPosition(2, currentLineCursor);
+        Console.Write(input);
+    }
+
+    private static async Task ExecuteCommand(string[] args)
+    {
+        if (args.Length == 0)
         {
-            Console.WriteLine($"Ошибка отправки сообщения в Telegram: {ex.Message}");
+            Console.WriteLine("Необходимо указать команду.");
+            return;
+        }
+
+        var command = args[0].ToLower();
+
+        if (command != "clientpath" && command != "cmdpath" && command != "help" && !pathsSetCorrectly)
+        {
+            Console.WriteLine("Для начала введите clientpath и cmdpath.");
+            return;
+        }
+
+        switch (command)
+        {
+            case "+update":
+                var config = await ConfigManager.LoadConfigAsync();
+                await Updater.UpdateAsync(config);
+                break;
+            case "updateplan":
+                string time = args.Length > 1 ? args[1] : RequestInput("Укажите время для планировщика: ");
+                string exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                TaskSchedulerManager.CreateUpdateTask("SteamGamesUpdateTask", time, exePath);
+                break;
+            case "collectlist":
+                config = await ConfigManager.LoadConfigAsync();
+                var games = GameCollector.GetInstalledGames(config.ClientPath);
+                GameCollector.CreateUpdateScript(Path.Combine(config.CmdPath, "scr.txt"), games);
+                break;
+            case "clientpath":
+                if (args.Length < 2)
+                {
+                    Console.WriteLine("Необходимо указать путь к клиенту.");
+                    return;
+                }
+                string clientPath = args[1];
+                await PathManager.SetClientPathAsync(clientPath);
+                clientPathSet = true;
+                await CheckAndRunCreateBatAndUpdatePlan();
+                LoadConfigAndCheckPaths();
+                break;
+            case "cmdpath":
+                if (args.Length < 2)
+                {
+                    Console.WriteLine("Необходимо указать путь к SteamCMD.");
+                    return;
+                }
+                string cmdPath = args[1];
+                await PathManager.SetCmdPathAsync(cmdPath);
+                cmdPathSet = true;
+                await CheckAndRunCreateBatAndUpdatePlan();
+                LoadConfigAndCheckPaths();
+                break;
+            case "createbat":
+                await PathManager.CreateBatFileAsync();
+                break;
+            case "help":
+                ShowHelp();
+                break;
+            default:
+                Console.WriteLine("Неизвестная команда.");
+                break;
         }
     }
 
-    static void Pause()
+    private static async Task CheckAndRunCreateBatAndUpdatePlan()
     {
-        Console.WriteLine("Нажмите любую клавишу для завершения...");
-        Console.ReadKey();
+        if (clientPathSet && cmdPathSet)
+        {
+            await PathManager.CreateBatFileAsync();
+            string updateTime = RequestInput("Укажите время для планировщика: ");
+            string exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            TaskSchedulerManager.CreateUpdateTask("SteamGamesUpdateTask", updateTime, exePath);
+        }
+    }
+
+    private static void ShowHelp()
+    {
+        Console.WriteLine("Доступные команды:");
+        Console.WriteLine("+update       - Запуск обновления игр.");
+        Console.WriteLine("updateplan    - Создание задачи для обновления игр по расписанию. Формат: updateplan {время}");
+        Console.WriteLine("collectlist   - Сбор списка установленных игр и создание скрипта обновления.");
+        Console.WriteLine("clientpath    - Указание пути к клиенту Steam. Формат: clientpath {путь}");
+        Console.WriteLine("cmdpath       - Указание пути к SteamCMD. Формат: cmdpath {путь}");
+        Console.WriteLine("createbat     - Создание батника для обновления игр.");
+        Console.WriteLine("help          - Показать справку по командам.");
+    }
+
+    private static string RequestInput(string prompt)
+    {
+        Console.Write(prompt);
+        return Console.ReadLine();
+    }
+
+    private static async Task LoadConfigAndCheckPaths()
+    {
+        var config = await ConfigManager.LoadConfigAsync();
+        clientPathSet = config.ClientPath != "путь_до";
+        cmdPathSet = config.CmdPath != "путь_до";
+        pathsSetCorrectly = clientPathSet && cmdPathSet;
     }
 }
