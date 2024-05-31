@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -11,13 +12,26 @@ public class Config
     public string BotToken { get; set; }
     public long ChatId { get; set; }
     public bool CheakTraid { get; set; }
-    public int TaidId { get; set;}
+    public int TaidId { get; set; }
 }
 
 class Program
 {
+    static Program()
+    {
+        SetupAssemblyResolver();
+    }
+    static void SetupAssemblyResolver()
+    {
+        AppDomain.CurrentDomain.AssemblyResolve += (sender, eventArgs) =>
+        {
+            string assemblyPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Dependencies", new AssemblyName(eventArgs.Name).Name + ".dll");
+            return File.Exists(assemblyPath) ? Assembly.LoadFrom(assemblyPath) : null;
+        };
+    }
     static async Task Main(string[] args)
     {
+
         Console.WriteLine("Запуск программы...");
 
         // Чтение конфигурации из JSON файла
@@ -111,6 +125,7 @@ class Program
         }
 
         Console.WriteLine("Программа завершена.");
+        Pause();
     }
 
     static async Task SendTelegramMessage(string message, Config config)

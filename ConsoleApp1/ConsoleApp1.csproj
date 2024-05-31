@@ -93,6 +93,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Target Name="MoveDependencies" AfterTargets="Build">
+    <MakeDir Directories="$(OutputPath)Dependencies" />
     <ItemGroup>
       <Assemblies Include="$(OutputPath)*.dll; $(OutputPath)*.xml" />
     </ItemGroup>
