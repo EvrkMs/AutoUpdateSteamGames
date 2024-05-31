@@ -35,7 +35,7 @@ class Program
     {
         List<string> commands = new List<string>
         {
-            "+update", "updateplan", "collectlist", "clientpath", "cmdpath", "createbat", "help"
+            "+update", "updateplan", "collectlist", "clientpath", "cmdpath", "createbat", "setting", "help"
         };
 
         while (true)
@@ -159,7 +159,7 @@ class Program
 
         var command = args[0].ToLower();
 
-        if (command != "clientpath" && command != "cmdpath" && command != "help" && !pathsSetCorrectly)
+        if (command != "clientpath" && command != "cmdpath" && command != "help" && command != "setting" && !pathsSetCorrectly)
         {
             Console.WriteLine("Для начала введите clientpath и cmdpath.");
             return;
@@ -179,7 +179,7 @@ class Program
             case "collectlist":
                 config = await ConfigManager.LoadConfigAsync();
                 var games = GameCollector.GetInstalledGames(config.ClientPath);
-                GameCollector.CreateUpdateScript(Path.Combine(config.CmdPath, "scr.txt"), games);
+                GameCollector.CreateUpdateScript(Path.Combine(config.CmdPath, "scr1.txt"), games);
                 break;
             case "clientpath":
                 if (args.Length < 2)
@@ -191,7 +191,7 @@ class Program
                 await PathManager.SetClientPathAsync(clientPath);
                 clientPathSet = true;
                 await CheckAndRunCreateBatAndUpdatePlan();
-                LoadConfigAndCheckPaths();
+                await LoadConfigAndCheckPaths();
                 break;
             case "cmdpath":
                 if (args.Length < 2)
@@ -203,10 +203,14 @@ class Program
                 await PathManager.SetCmdPathAsync(cmdPath);
                 cmdPathSet = true;
                 await CheckAndRunCreateBatAndUpdatePlan();
-                LoadConfigAndCheckPaths();
+                await LoadConfigAndCheckPaths();
                 break;
             case "createbat":
                 await PathManager.CreateBatFileAsync();
+                break;
+            case "setting":
+                await SettingManager.RunSettingAsync();
+                await LoadConfigAndCheckPaths();  // Обновить состояние путей после настройки
                 break;
             case "help":
                 ShowHelp();
@@ -237,6 +241,7 @@ class Program
         Console.WriteLine("clientpath    - Указание пути к клиенту Steam. Формат: clientpath {путь}");
         Console.WriteLine("cmdpath       - Указание пути к SteamCMD. Формат: cmdpath {путь}");
         Console.WriteLine("createbat     - Создание батника для обновления игр.");
+        Console.WriteLine("setting       - Настройка конфигурации.");
         Console.WriteLine("help          - Показать справку по командам.");
     }
 
