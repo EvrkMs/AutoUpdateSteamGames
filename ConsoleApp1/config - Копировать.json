@@ -7,4 +7,8 @@
   "CheakTraid": true,
   //топик чата если CheakTraid == true
   "TaidId": 0
+
+"SteamAppsPath": "E:\\steam\\steamapps",
+"ClientPath": "путь_до",
+"CmdPath": "путь_до"
 }
