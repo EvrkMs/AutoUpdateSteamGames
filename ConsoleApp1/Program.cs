@@ -17,25 +17,14 @@ public class Config
 
 class Program
 {
-    static Program()
-    {
-        SetupAssemblyResolver();
-    }
-    static void SetupAssemblyResolver()
-    {
-        AppDomain.CurrentDomain.AssemblyResolve += (sender, eventArgs) =>
-        {
-            string assemblyPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Dependencies", new AssemblyName(eventArgs.Name).Name + ".dll");
-            return File.Exists(assemblyPath) ? Assembly.LoadFrom(assemblyPath) : null;
-        };
-    }
     static async Task Main(string[] args)
     {
 
         Console.WriteLine("Запуск программы...");
 
         // Чтение конфигурации из JSON файла
-        string configPath = "config.json";
+        string exePath = AppDomain.CurrentDomain.BaseDirectory;
+        string configPath = Path.Combine(exePath, "config.json");
         if (!File.Exists(configPath))
         {
             Console.WriteLine($"Файл конфигурации не найден: {configPath}");
