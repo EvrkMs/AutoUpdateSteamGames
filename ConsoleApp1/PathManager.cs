@@ -44,8 +44,6 @@ public static class PathManager
         string linkPath = Path.Combine(cmdPath, "steamapps");
         string targetPath = Path.Combine(steamAppsPath);
 
-        // Создаем каталог, если его еще нет
-        Directory.CreateDirectory(Path.Combine(cmdPath, "steamapps"));
 
         // Создаем символическую ссылку
         var process = new Process
