@@ -41,8 +41,8 @@ public static class PathManager
 
     private static void CreateSymbolicLink(string cmdPath, string steamAppsPath)
     {
-        string linkPath = Path.Combine(cmdPath, "steamapps", "common");
-        string targetPath = Path.Combine(steamAppsPath, "common");
+        string linkPath = Path.Combine(cmdPath, "steamapps");
+        string targetPath = Path.Combine(steamAppsPath);
 
         // Создаем каталог, если его еще нет
         Directory.CreateDirectory(Path.Combine(cmdPath, "steamapps"));
