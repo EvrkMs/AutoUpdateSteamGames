@@ -4,8 +4,9 @@
   "ChatId": -0,
   "CheakTraid": true,
   "TaidId": 0,
+  "Message": "",
   
-  "SteamAppsPath": "путь_до",
-  "ClientPath": "путь_до",
-  "CmdPath": "путь_до"
+  "SteamAppsPath": "path_do",
+  "ClientPath": "path_do",
+  "CmdPath": "path_do"
 }
