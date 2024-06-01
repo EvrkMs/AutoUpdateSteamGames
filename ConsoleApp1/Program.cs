@@ -161,20 +161,20 @@ class Program
     {
 
         Console.WriteLine("Доступные команды:");
-        Console.WriteLine("+update           - Запуск обновления игр.");
-        Console.WriteLine("updateplan        - Создание задачи для обновления игр по расписанию. Формат: updateplan {время}");
-        Console.WriteLine("collectlist       - Сбор списка установленных игр и создание скрипта обновления.");
-        Console.WriteLine("clientpath        - Указание пути к клиенту Steam. Формат: clientpath {путь}");
-        Console.WriteLine("cmdpath           - Указание пути к SteamCMD. Формат: cmdpath {путь}");
-        Console.WriteLine("createbat         - Создание батника для обновления игр.");
-        Console.WriteLine("setting       - Настройка конфигурации бота.");
-        Console.WriteLine("setting 1     - Изменения токена бота в конфигурации отдельно от остальных вопросов.");
-        Console.WriteLine("setting 2     - Изменения id чата отдельно от других вопросов.");
-        Console.WriteLine("setting 3     - Изменения галочки использования топпиков чата");
-        Console.WriteLine("setting 4     - Изменения id топпика отдельно от других вопросов");
-        Console.WriteLine("setting 5     - Изменить отправку сообщения отельно от других вопросов");
-        Console.WriteLine("downloadsteamcmd {path} - Скачивание последней версии SteamCMD. Формат: downloadsteamcmd {путь}");
-        Console.WriteLine("help              - Показать справку по командам.");
+        Console.WriteLine("+update                  - Запуск обновления игр.");
+        Console.WriteLine("updateplan               - Создание задачи для обновления игр по расписанию. Формат: updateplan {время}");
+        Console.WriteLine("collectlist              - Сбор списка установленных игр и создание скрипта обновления.");
+        Console.WriteLine("clientpath               - Указание пути к клиенту Steam. Формат: clientpath {путь}");
+        Console.WriteLine("cmdpath                  - Указание пути к SteamCMD. Формат: cmdpath {путь}");
+        Console.WriteLine("createbat                - Создание батника для обновления игр.");
+        Console.WriteLine("setting                  - Настройка конфигурации бота.");
+        Console.WriteLine("setting 1                - Изменения токена бота в конфигурации отдельно от остальных вопросов.");
+        Console.WriteLine("setting 2                - Изменения id чата отдельно от других вопросов.");
+        Console.WriteLine("setting 3                - Изменения галочки использования топпиков чата");
+        Console.WriteLine("setting 4                - Изменения id топпика отдельно от других вопросов");
+        Console.WriteLine("setting 5                - Изменить отправку сообщения отельно от других вопросов");
+        Console.WriteLine("downloadsteamcmd {path}  - Скачивание последней версии SteamCMD. Формат: downloadsteamcmd {путь}");
+        Console.WriteLine("help                     - Показать справку по командам.");
     }
 
     private static async Task LoadConfigAndCheckPaths()
