@@ -173,7 +173,7 @@ class Program
         Console.WriteLine("setting 3     - Изменения галочки использования топпиков чата");
         Console.WriteLine("setting 4     - Изменения id топпика отдельно от других вопросов");
         Console.WriteLine("setting 5     - Изменить отправку сообщения отельно от других вопросов");
-        Console.WriteLine("downloadsteamcmd \path\ - Скачивание последней версии SteamCMD. Формат: downloadsteamcmd {путь}");
+        Console.WriteLine("downloadsteamcmd {path} - Скачивание последней версии SteamCMD. Формат: downloadsteamcmd {путь}");
         Console.WriteLine("help              - Показать справку по командам.");
     }
 
