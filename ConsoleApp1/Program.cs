@@ -34,14 +34,18 @@ class Program
     private static async Task RunInteractiveMode()
     {
         List<string> commands = new List<string>
-        {
-            "+update", "updateplan", "collectlist", "clientpath", "cmdpath", "createbat", "setting", "downloadsteamcmd", "help"
-        };
+    {
+        "+update", "updateplan", "collectlist", "clientpath", "cmdpath", "createbat", "setting", "downloadsteamcmd", "help"
+    };
 
         while (true)
         {
             Console.Write("> ");
             string input = TabEvent.ReadInputWithAutoComplete(commands, commandHistory, ref historyIndex);
+
+            // Удаляем пробелы, запятые и ненужные символы перед командой
+            input = input.Trim().Trim(',', ' ');  // Убираем пробелы и запятые в начале и конце строки
+
             if (string.IsNullOrWhiteSpace(input))
             {
                 continue;
@@ -51,6 +55,10 @@ class Program
             historyIndex = commandHistory.Count;
 
             string[] commandArgs = input.Split(' ');
+
+            // Дополнительно убираем пустые аргументы, если они есть (например, лишние пробелы внутри команды)
+            commandArgs = commandArgs.Where(arg => !string.IsNullOrWhiteSpace(arg)).ToArray();
+
             await ExecuteCommand(commandArgs);
         }
     }
@@ -95,7 +103,16 @@ class Program
                         Console.WriteLine("Необходимо указать путь к клиенту.");
                         return;
                     }
-                    string clientPath = args[1];
+
+                    // Собираем весь путь, даже если он содержит пробелы
+                    string clientPath = string.Join(" ", args.Skip(1)).Trim();
+
+                    // Можно добавить проверку: если путь уже в кавычках — оставляем как есть
+                    if (clientPath.StartsWith("\"") && clientPath.EndsWith("\""))
+                    {
+                        clientPath = clientPath.Trim('\"'); // Убираем кавычки
+                    }
+
                     await PathManager.SetClientPathAsync(clientPath);
                     clientPathSet = true;
                     await CheckAndRunCreateBatAndUpdatePlan();
