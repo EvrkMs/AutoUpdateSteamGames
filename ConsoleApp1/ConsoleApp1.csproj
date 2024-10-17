@@ -62,7 +62,7 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>AB2FD3F19DB652D167CC54527A42D3A06AE4F147</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>E80E9C3C054C3C4EE8F348A452279F0F4CAD1543</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>ConsoleApp1_TemporaryKey.pfx</ManifestKeyFile>
