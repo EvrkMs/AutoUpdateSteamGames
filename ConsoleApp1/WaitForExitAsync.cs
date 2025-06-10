@@ -1,48 +1,49 @@
-﻿using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
-public static class ProcessExtensions
+namespace AutoUpdateSteamGames
 {
-    public static Task WaitForExitAsync(this Process process, CancellationToken cancellationToken = default)
+    public static class ProcessExtensions
     {
-        var tcs = new TaskCompletionSource<bool>();
-
-        void ProcessExited(object sender, EventArgs e)
+        public static Task WaitForExitAsync(this Process process, CancellationToken cancellationToken = default)
         {
-            process.Exited -= ProcessExited;
-            tcs.TrySetResult(true);
-        }
+            var tcs = new TaskCompletionSource<bool>();
 
-        process.Exited += ProcessExited;
-
-        if (cancellationToken != default)
-        {
-            cancellationToken.Register(() =>
+            void ProcessExited(object sender, EventArgs e)
             {
                 process.Exited -= ProcessExited;
-                tcs.TrySetCanceled();
-            });
+                tcs.TrySetResult(true);
+            }
+
+            process.Exited += ProcessExited;
+
+            if (cancellationToken != default)
+            {
+                cancellationToken.Register(() =>
+                {
+                    process.Exited -= ProcessExited;
+                    tcs.TrySetCanceled();
+                });
+            }
+
+            process.EnableRaisingEvents = true;
+
+            if (process.HasExited)
+            {
+                process.Exited -= ProcessExited;
+                tcs.TrySetResult(true);
+            }
+
+            return tcs.Task;
         }
 
-        process.EnableRaisingEvents = true;
-
-        if (process.HasExited)
+        public static async Task<string> ReadAllTextAsync(string path)
         {
-            process.Exited -= ProcessExited;
-            tcs.TrySetResult(true);
-        }
-
-        return tcs.Task;
-    }
-
-    public static async Task<string> ReadAllTextAsync(string path)
-    {
-        using (var reader = new StreamReader(path, Encoding.UTF8))
-        {
+            using var reader = new StreamReader(path, Encoding.UTF8);
             return await reader.ReadToEndAsync();
         }
     }
