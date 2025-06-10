@@ -44,14 +44,16 @@ namespace AutoUpdateSteamGames
 
         public static void CreateUpdateScript(string scriptPath, List<InstalledGame> games)
         {
-            using var writer = new StreamWriter(scriptPath, false, Encoding.UTF8);
-            writer.WriteLine("@ShutdownOnFailedCommand 1");
-            writer.WriteLine("@NoPromptForPassword 1");
-            foreach (var game in games)
+            using (var writer = new StreamWriter(scriptPath, false, Encoding.UTF8))
             {
-                writer.WriteLine($"app_update {game.AppId} validate // {game.Name}");
+                writer.WriteLine("@ShutdownOnFailedCommand 1");
+                writer.WriteLine("@NoPromptForPassword 1");
+                foreach (var game in games)
+                {
+                    writer.WriteLine($"app_update {game.AppId} validate // {game.Name}");
+                }
+                writer.WriteLine("quit");
             }
-            writer.WriteLine("quit");
         }
     }
 }

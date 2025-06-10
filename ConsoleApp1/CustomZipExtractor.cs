@@ -7,17 +7,19 @@ namespace AutoUpdateSteamGames
     {
         public static void ExtractToDirectory(string zipFilePath, string extractPath)
         {
-            using var archive = ZipFile.Read(zipFilePath);
-            foreach (var entry in archive)
+            using (var archive = ZipFile.Read(zipFilePath))
             {
-                string destinationPath = Path.Combine(extractPath, entry.FileName);
-                if (entry.IsDirectory)
+                foreach (var entry in archive)
                 {
-                    Directory.CreateDirectory(destinationPath);
-                }
-                else
-                {
-                    entry.Extract(extractPath, ExtractExistingFileAction.OverwriteSilently);
+                    string destinationPath = Path.Combine(extractPath, entry.FileName);
+                    if (entry.IsDirectory)
+                    {
+                        Directory.CreateDirectory(destinationPath);
+                    }
+                    else
+                    {
+                        entry.Extract(extractPath, ExtractExistingFileAction.OverwriteSilently);
+                    }
                 }
             }
         }

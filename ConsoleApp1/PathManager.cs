@@ -27,11 +27,13 @@ namespace AutoUpdateSteamGames
         {
             var config = await ConfigManager.LoadConfigAsync();
             string batFilePath = Path.Combine(config.CmdPath, "UpdateSteamGames.bat");
-            using var writer = new StreamWriter(batFilePath, false, System.Text.Encoding.UTF8);
-            writer.WriteLine("@echo off");
-            writer.WriteLine("chcp 65001 > nul 2>&1");
-            writer.WriteLine("cls");
-            writer.WriteLine($"{config.CmdPath}\\steamcmd.exe +runscript {config.CmdPath}\\scr.txt");
+            using (var writer = new StreamWriter(batFilePath, false, System.Text.Encoding.UTF8))
+            {
+                writer.WriteLine("@echo off");
+                writer.WriteLine("chcp 65001 > nul 2>&1");
+                writer.WriteLine("cls");
+                writer.WriteLine($"{config.CmdPath}\\steamcmd.exe +runscript {config.CmdPath}\\scr.txt");
+            }
 
             config.BatFilePath = batFilePath;
             await ConfigManager.SaveConfigAsync(config);

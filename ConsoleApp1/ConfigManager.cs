@@ -30,14 +30,18 @@ namespace AutoUpdateSteamGames
 
         private static async Task<string> ReadAllTextAsync(string path)
         {
-            using var reader = new StreamReader(path, Encoding.UTF8);
-            return await reader.ReadToEndAsync();
+            using (var reader = new StreamReader(path, Encoding.UTF8))
+            {
+                return await reader.ReadToEndAsync();
+            }
         }
 
         private static async Task WriteAllTextAsync(string path, string content)
         {
-            using var writer = new StreamWriter(path, false, Encoding.UTF8);
-            await writer.WriteAsync(content);
+            using (var writer = new StreamWriter(path, false, Encoding.UTF8))
+            {
+                await writer.WriteAsync(content);
+            }
         }
     }
 }
