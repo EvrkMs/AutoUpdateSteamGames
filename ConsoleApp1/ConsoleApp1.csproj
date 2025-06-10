@@ -126,6 +126,8 @@
     <Compile Include="CustomZipExtractor.cs" />
     <Compile Include="FileDownloader.cs" />
     <Compile Include="GameCollector.cs" />
+    <Compile Include="Models\Config.cs" />
+    <Compile Include="Models\InstalledGame.cs" />
     <Compile Include="PathManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,25 +1,22 @@
-﻿using System;
 using System.IO;
-using Ionic.Zip;  // using directive для библиотеки DotNetZip
+using Ionic.Zip;
 
-public static class CustomZipExtractor
+namespace AutoUpdateSteamGames
 {
-    public static void ExtractToDirectory(string zipFilePath, string extractPath)
+    public static class CustomZipExtractor
     {
-        using (var archive = ZipFile.Read(zipFilePath))
+        public static void ExtractToDirectory(string zipFilePath, string extractPath)
         {
+            using var archive = ZipFile.Read(zipFilePath);
             foreach (var entry in archive)
             {
                 string destinationPath = Path.Combine(extractPath, entry.FileName);
-
-                // Создание директорий, если их нет
                 if (entry.IsDirectory)
                 {
                     Directory.CreateDirectory(destinationPath);
                 }
                 else
                 {
-                    // Извлечение файла
                     entry.Extract(extractPath, ExtractExistingFileAction.OverwriteSilently);
                 }
             }

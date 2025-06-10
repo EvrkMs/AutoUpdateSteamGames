@@ -1,97 +1,89 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using AutoUpdateSteamGames.Models;
 
-public static class Updater
+namespace AutoUpdateSteamGames
 {
-    public static async Task UpdateAsync(Config config)
+    public static class Updater
     {
-        if (config == null || string.IsNullOrEmpty(config.BatFilePath))
+        public static async Task UpdateAsync(Config config)
         {
-            throw new ArgumentException("Путь к батнику не задан в конфигурации.");
-        }
+            if (config == null || string.IsNullOrEmpty(config.BatFilePath))
+                throw new ArgumentException("Путь к батнику не задан в конфигурации.");
 
-        if (!File.Exists(config.BatFilePath))
-        {
-            throw new FileNotFoundException($"Батник не найден по указанному пути: {config.BatFilePath}");
-        }
+            if (!File.Exists(config.BatFilePath))
+                throw new FileNotFoundException($"Батник не найден по указанному пути: {config.BatFilePath}");
 
-        Console.WriteLine($"Запуск батника: {config.BatFilePath}");
+            Console.WriteLine($"Запуск батника: {config.BatFilePath}");
 
-        Process process = new Process
-        {
-            StartInfo = new ProcessStartInfo
+            var process = new Process
             {
-                FileName = config.BatFilePath,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = config.BatFilePath,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = Encoding.UTF8,
+                    StandardErrorEncoding = Encoding.UTF8
+                }
+            };
+
+            process.OutputDataReceived += (sender, e) => { if (e.Data != null) Console.WriteLine(e.Data); };
+            process.ErrorDataReceived += (sender, e) => { if (e.Data != null) Console.WriteLine("ERROR: " + e.Data); };
+
+            try
+            {
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                await process.WaitForExitAsync();
+
+                Console.WriteLine("Батник завершил работу.");
+
+                if (process.ExitCode == 0)
+                {
+                    Console.WriteLine("Батник успешно выполнен.");
+                    await SendTelegramMessage(config.Message, config);
+                }
+                else
+                {
+                    await SendTelegramMessage($"Батник завершился с ошибкой. Код выхода: {process.ExitCode}", config);
+                }
             }
-        };
-
-        process.OutputDataReceived += (sender, e) =>
-        {
-            if (e.Data != null)
-                Console.WriteLine(e.Data);
-        };
-        process.ErrorDataReceived += (sender, e) =>
-        {
-            if (e.Data != null)
-                Console.WriteLine("ERROR: " + e.Data);
-        };
-
-        try
-        {
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            await process.WaitForExitAsync();
-
-            Console.WriteLine("Батник завершил работу.");
-
-            if (process.ExitCode == 0)
+            catch (Exception ex)
             {
-                Console.WriteLine("Батник успешно выполнен.");
-                await SendTelegramMessage(config.Message, config);
-            }
-            else
-            {
-                await SendTelegramMessage($"Батник завершился с ошибкой. Код выхода: {process.ExitCode}", config);
+                await SendTelegramMessage($"Ошибка запуска процесса: {ex.Message}", config);
             }
         }
-        catch (Exception ex)
-        {
-            await SendTelegramMessage($"Ошибка запуска процесса: {ex.Message}", config);
-        }
-    }
 
-    private static async Task SendTelegramMessage(string message, Config config)
-    {
-        string botToken = config.BotToken;
-        long chatId = config.ChatId;
+        private static async Task SendTelegramMessage(string message, Config config)
+        {
+            string botToken = config.BotToken;
+            long chatId = config.ChatId;
 
-        try
-        {
-            TelegramBotClient botClient = new TelegramBotClient(botToken);
-            if (!config.CheakTraid)
+            try
             {
-                await botClient.SendTextMessageAsync(chatId, message);
+                var botClient = new TelegramBotClient(botToken);
+                if (!config.CheakTraid)
+                {
+                    await botClient.SendTextMessageAsync(chatId, message);
+                }
+                else
+                {
+                    await botClient.SendTextMessageAsync(chatId, message, replyToMessageId: config.TaidId);
+                }
+                Console.WriteLine("Сообщение отправлено в Telegram.");
             }
-            else
+            catch (Exception ex)
             {
-                await botClient.SendTextMessageAsync(chatId, message, replyToMessageId: config.TaidId);
+                Console.WriteLine($"Ошибка отправки сообщения в Telegram: {ex.Message}");
             }
-            Console.WriteLine("Сообщение отправлено в Telegram.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Ошибка отправки сообщения в Telegram: {ex.Message}");
         }
     }
 }
