@@ -51,7 +51,7 @@ namespace AutoUpdateSteamGames
                 commandHistory.Add(input);
                 historyIndex = commandHistory.Count;
 
-                string[] commandArgs = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                string[] commandArgs = input.Split(' ', (char)StringSplitOptions.RemoveEmptyEntries);
                 await ExecuteCommand(commandArgs);
             }
         }
