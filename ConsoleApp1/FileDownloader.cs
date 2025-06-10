@@ -9,11 +9,13 @@ namespace AutoUpdateSteamGames
     {
         private const string SteamCmdUrl = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip";
 
+
         public static async Task DownloadSteamCmdAsync(string destinationPath)
         {
             try
             {
                 if (!Directory.Exists(destinationPath))
+
                 {
                     Directory.CreateDirectory(destinationPath);
                 }
